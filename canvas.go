@@ -1,5 +1,7 @@
 package draw
 
+import "errors"
+
 type Canvas struct {
 	width  int
 	height int
@@ -14,14 +16,38 @@ func NewCanvas(width int, height int) *Canvas {
 	}
 }
 
-func (c *Canvas) SetPixel(x int, y int, color byte) error {
-	c.pixels[c.width*y+x] = color
+func (c *Canvas) Width() int {
+	return c.width
 }
 
-func (c *Canvas) GetPixel(x int, y int) (byte, error) {
-	return c.pixels[c.width*y+x], nil
+func (c *Canvas) Height() int {
+	return c.height
 }
 
 func (c *Canvas) calcIndex(x int, y int) (int, error) {
-	
+	if x < 0 || c.width <= x || y < 0 || c.height <= y {
+		return 0, errors.New("range over")
+	}
+
+	return c.width*y + x, nil
+}
+
+func (c *Canvas) SetPixel(x int, y int, color byte) error {
+	index, err := c.calcIndex(x, y)
+	if err != nil {
+		return err
+	}
+
+	c.pixels[index] = color
+
+	return nil
+}
+
+func (c *Canvas) GetPixel(x int, y int) (byte, error) {
+	index, err := c.calcIndex(x, y)
+	if err != nil {
+		return 0, err
+	}
+
+	return c.pixels[index], nil
 }
